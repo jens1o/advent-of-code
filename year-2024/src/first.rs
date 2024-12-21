@@ -23,8 +23,10 @@ fn calculate_total_distance() -> u32 {
 
     let mut distance_sum = 0;
 
-    while let (Some(smallest_left), Some(smallest_right)) = (left_heap.pop(), right_heap.pop()) {
-        let distance = smallest_left.abs_diff(smallest_right);
+    // The challenge talks about comparing the two smallest elements to each other, but the ordering
+    // doesn't matter. So we compare the two biggest elements to each other and it still works. :)
+    while let (Some(biggest_left), Some(biggest_right)) = (left_heap.pop(), right_heap.pop()) {
+        let distance = biggest_left.abs_diff(biggest_right);
 
         distance_sum += distance;
     }

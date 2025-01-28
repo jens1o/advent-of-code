@@ -1,11 +1,12 @@
 #[allow(unused)]
-const SAMPLE_PUZZLE_INPUT: &'static str = r#"7 6 4 2 1
+const SAMPLE_PUZZLE_INPUT: &str = r#"7 6 4 2 1
 1 2 7 8 9
 9 7 6 2 1
 1 3 2 4 5
 8 6 4 4 1
 1 3 6 7 9"#;
 
+#[allow(unused)]
 pub(crate) fn second_december() {
     let mut safe_reports = 0;
 
@@ -39,7 +40,7 @@ fn report_is_safe(report: &Vec<u8>) -> bool {
         if let Some(previous_level) = previous_level {
             let abs_diff = level.abs_diff(previous_level);
 
-            if abs_diff < 1 || abs_diff > 3 {
+            if !(1..=3).contains(&abs_diff) {
                 eprintln!("any two adjacent levels differ by at least one and at most three, got {abs_diff}!");
                 return false; // diff needs to be greater than equal 1 but smaller than 4
             }
@@ -67,7 +68,7 @@ fn report_is_safe(report: &Vec<u8>) -> bool {
 }
 
 fn report_can_be_safe(report: &Vec<u8>) -> bool {
-    if report_is_safe(&report) {
+    if report_is_safe(report) {
         return true;
     }
 

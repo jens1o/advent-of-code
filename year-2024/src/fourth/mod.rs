@@ -5,7 +5,8 @@ use finder::count_xmas;
 mod finder;
 mod grid;
 
-const SAMPLE_PAYLOAD: &'static str = "MMMSXXMASM
+#[allow(unused)]
+const SAMPLE_PAYLOAD: &str = "MMMSXXMASM
 MSAMXMSMSA
 AMXSXMAAMM
 MSAMASMSMX
@@ -16,6 +17,7 @@ SAXAMASAAA
 MAMMMXMMMM
 MXMXAXMASX";
 
+#[allow(unused)]
 pub fn fourth_december() {
     let payload = include_str!("fourth.txt");
 

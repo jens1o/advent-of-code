@@ -1,5 +1,3 @@
-use std::ops::Mul;
-
 use regex::Regex;
 
 #[derive(Debug)]
@@ -11,6 +9,7 @@ impl MulInstruction {
     }
 }
 
+#[allow(unused)]
 pub fn third_december() {
     let mut instructions_enabled = true;
     let mut last_instruction_pos = None;
@@ -20,7 +19,7 @@ pub fn third_december() {
     let mut picked_up_instructions: Vec<MulInstruction> = Vec::new();
 
     let payload = include_str!("part3-input.txt");
-    for keyword_match in instructions_keywords.find_iter(&payload) {
+    for keyword_match in instructions_keywords.find_iter(payload) {
         if instructions_enabled {
             let current_section = match last_instruction_pos {
                 Some(pos) => &payload[pos..keyword_match.start()],

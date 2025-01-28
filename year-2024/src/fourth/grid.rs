@@ -29,7 +29,7 @@ pub(super) fn prepare_grid(payload: impl AsRef<str>) -> Grid {
     Grid {
         length_per_line: line_length,
         number_of_lines: line_count,
-        grid_structure: grid_structure,
+        grid_structure,
     }
 }
 

@@ -1,3 +1,4 @@
 [workspace]
 
 members = ["year-2024"]
+resolver = "2"

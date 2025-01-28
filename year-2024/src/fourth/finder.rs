@@ -3,7 +3,7 @@
 
 use super::grid::Grid;
 
-const NEEDLE: &'static str = "XMAS";
+const NEEDLE: &str = "XMAS";
 
 pub(super) fn count_xmas(grid: &Grid) -> usize {
     let mut found_counter = 0;
@@ -21,7 +21,7 @@ fn find_diagonals(grid: &Grid) -> usize {
     let mut found_counter = 0;
 
     // iterate through each line aka row, look for an X (start of XMAS) and then search diagonal in four directions from the finding (above left/right, below left/right)
-    for (row_no, line) in (&grid.grid_structure).iter().enumerate() {
+    for (row_no, line) in grid.grid_structure.iter().enumerate() {
         for (col_no, _found_x) in line
             .iter()
             .enumerate()
@@ -135,7 +135,7 @@ fn find_horizontals(grid: &Grid) -> usize {
     found_counter
 }
 
-fn count_horizontal_in_line(line: &Vec<char>) -> usize {
+fn count_horizontal_in_line(line: &[char]) -> usize {
     let mut counter = 0;
 
     for i in 0..=(line.len() - NEEDLE.len()) {

@@ -1,5 +1,6 @@
 use std::collections::{BinaryHeap, HashMap};
 
+#[allow(unused)]
 pub fn first_december() {
     dbg!(calculate_total_distance());
     dbg!(calculate_similarity_score());
@@ -11,7 +12,6 @@ fn calculate_total_distance() -> u32 {
 
     for line in include_str!("first-part1.txt").lines() {
         let mut numbers = line
-            .trim()
             .split_whitespace()
             .filter_map(|x| x.parse::<u32>().ok());
 
@@ -40,7 +40,6 @@ fn calculate_similarity_score() -> u32 {
 
     for line in include_str!("first-part1.txt").lines() {
         let mut numbers = line
-            .trim()
             .split_whitespace()
             .filter_map(|x| x.parse::<u32>().ok());
 

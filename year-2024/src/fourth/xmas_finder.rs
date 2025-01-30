@@ -153,7 +153,7 @@ fn count_horizontal_in_line(line: &[char]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::fourth::{finder::find_diagonals, grid::Grid};
+    use crate::fourth::{grid::Grid, xmas_finder::find_diagonals};
 
     use super::{count_horizontal_in_line, find_verticals};
 

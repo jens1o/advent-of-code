@@ -1,6 +1,10 @@
 use core::{fmt, panic};
 use std::collections::HashSet;
 
+#[cfg(test)]
+mod tests;
+
+#[allow(unused)]
 const SAMPLE: &str = "
 ....#.....
 .........#
@@ -13,7 +17,7 @@ const SAMPLE: &str = "
 #.........
 ......#...";
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 enum Direction {
     Upwards,
     Right,
@@ -162,14 +166,18 @@ impl Map {
 }
 
 pub(crate) fn sixth_december() {
-    let input = SAMPLE.trim();
-    // let input = include_str!("sixth.txt");
+    // let input = SAMPLE.trim();
+    let input = include_str!("sixth.txt");
 
     let (map, guard) = parse_puzzle_input(input);
 
+    println!("{}", map.text_representation(Some(&guard)));
+
     dbg!(part_1(&map, guard.clone()));
 
-    part_2(map, guard);
+    let locations_for_looping_the_security = part_2(map, guard);
+
+    dbg!(locations_for_looping_the_security.len());
 }
 
 // Checks whether it is allowed to place an obstacle at the candidate's position
@@ -179,14 +187,21 @@ fn is_valid_position_for_obstacle((x, y): (usize, usize), map: &Map, guard: &Gua
         return false;
     }
 
+    if map.size.0 <= x || map.size.1 <= y {
+        dbg!(map.size, (x, y));
+        return false;
+    }
+
     // we can't place an additional obstacle where there is already one
     if map.map[y][x] == MapTile::Obstruction {
         return false;
     }
 
+    return true;
+
     // we can't place an obstacle diagonal to another one
     // so that the guard would need to take two turns immediately
-    let mut diagonal_tiles_that_must_be_floor_tiles = Vec::new();
+    let mut diagonal_tiles_that_must_be_floor_tiles: Vec<(usize, usize)> = Vec::new();
 
     // gather tiles on the map that need to be free
     if x > 0 && y > 0 {
@@ -206,7 +221,7 @@ fn is_valid_position_for_obstacle((x, y): (usize, usize), map: &Map, guard: &Gua
         let diagonal_tile = map
             .map
             .get(diagonal_tile_y)
-            .and_then(|row| row.get(diagonal_tile_x));
+            .and_then(|row: &Vec<MapTile>| row.get(diagonal_tile_x));
 
         if let Some(diagonal_tile) = diagonal_tile {
             if diagonal_tile == &MapTile::Obstruction {
@@ -218,11 +233,11 @@ fn is_valid_position_for_obstacle((x, y): (usize, usize), map: &Map, guard: &Gua
     true
 }
 
-fn part_2(map: Map, guard: Guard) {
-    let mut possible_obstacle_positions_to_create_loops = 0;
+fn part_2(map: Map, guard: Guard) -> Vec<(usize, usize)> {
+    let mut possible_obstacle_positions_to_create_loops = Vec::new();
 
-    for y in 0..map.size.0 {
-        'outer: for x in 0..map.size.1 - 1 {
+    for x in 0..map.size.0 {
+        'outer: for y in 0..map.size.1 {
             if !is_valid_position_for_obstacle((x, y), &map, &guard) {
                 continue;
             }
@@ -234,7 +249,8 @@ fn part_2(map: Map, guard: Guard) {
 
             let mut guard_on_new_map = guard.clone();
 
-            let mut positions_with_took_turns: HashSet<(usize, usize)> = HashSet::new();
+            let mut positions_with_took_turns: HashSet<((usize, usize), Direction)> =
+                HashSet::new();
 
             loop {
                 match map_with_obstruction.get_next_obstruction(
@@ -242,7 +258,8 @@ fn part_2(map: Map, guard: Guard) {
                     guard_on_new_map.current_direction,
                 ) {
                     (Some(new_position), _walked_path) => {
-                        let in_loop = !positions_with_took_turns.insert(new_position);
+                        let in_loop = !positions_with_took_turns
+                            .insert((new_position, guard_on_new_map.current_direction));
 
                         if in_loop {
                             println!(
@@ -252,27 +269,16 @@ fn part_2(map: Map, guard: Guard) {
                             println!("{}", map_with_obstruction.text_representation(Some(&guard)));
                             println!();
 
-                            possible_obstacle_positions_to_create_loops += 1;
+                            possible_obstacle_positions_to_create_loops.push((x, y));
                             continue 'outer;
                         }
 
                         guard_on_new_map.position = new_position;
                         guard_on_new_map.current_direction =
                             guard_on_new_map.current_direction.turn_right();
-
-                        // println!(
-                        //     "{}",
-                        //     map_with_obstruction.text_representation(Some(&guard_on_new_map))
-                        // );
-                        // println!();
                     }
                     (None, walked_path) => {
                         guard_on_new_map.position = *walked_path.last().unwrap();
-                        // println!(
-                        //     "{}",
-                        //     map_with_obstruction.text_representation(Some(&guard_on_new_map))
-                        // );
-                        // println!();
 
                         // we're not in a loop as we run out of the world
                         continue 'outer;
@@ -282,7 +288,7 @@ fn part_2(map: Map, guard: Guard) {
         }
     }
 
-    dbg!(possible_obstacle_positions_to_create_loops);
+    possible_obstacle_positions_to_create_loops
 }
 
 fn part_1(map: &Map, mut guard: Guard) -> usize {
@@ -308,7 +314,7 @@ fn part_1(map: &Map, mut guard: Guard) -> usize {
 }
 
 fn parse_puzzle_input(input: impl AsRef<str>) -> (Map, Guard) {
-    let input = input.as_ref();
+    let input = input.as_ref().trim();
 
     let mut size = (None, 0);
     let mut guard_position = None;
@@ -327,7 +333,7 @@ fn parse_puzzle_input(input: impl AsRef<str>) -> (Map, Guard) {
 
         size.1 += 1;
 
-        let mut row = Vec::new();
+        let mut row = Vec::with_capacity(line.len());
         for (x, map_tile) in line.chars().enumerate() {
             match map_tile {
                 '^' => {
@@ -337,11 +343,16 @@ fn parse_puzzle_input(input: impl AsRef<str>) -> (Map, Guard) {
                 '#' => {
                     row.push(MapTile::Obstruction);
                 }
-                _ => {
+                '.' => {
                     row.push(MapTile::Free);
+                }
+                _other => {
+                    unreachable!();
                 }
             }
         }
+
+        debug_assert_eq!(row.len(), line.len());
 
         map.push(row);
     }

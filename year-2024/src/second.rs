@@ -41,7 +41,6 @@ fn report_is_safe(report: &Vec<u8>) -> bool {
             let abs_diff = level.abs_diff(previous_level);
 
             if !(1..=3).contains(&abs_diff) {
-                eprintln!("any two adjacent levels differ by at least one and at most three, got {abs_diff}!");
                 return false; // diff needs to be greater than equal 1 but smaller than 4
             }
 
@@ -56,7 +55,6 @@ fn report_is_safe(report: &Vec<u8>) -> bool {
             }
 
             if current_trend != detected_report_state {
-                eprintln!("not monotonically increasing or decreasing!");
                 return false;
             }
         }

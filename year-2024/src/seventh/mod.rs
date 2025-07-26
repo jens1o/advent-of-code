@@ -1,4 +1,4 @@
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use std::{
     iter,
     sync::atomic::{AtomicU16, Ordering},
@@ -11,7 +11,7 @@ mod tests;
 
 type NumberType = u64;
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 struct Equation {
     test_value: NumberType,
     numbers: Vec<NumberType>,
@@ -58,78 +58,86 @@ fn parse_equation_list(input: impl AsRef<str>) -> Vec<Equation> {
     equations
 }
 
-fn get_all_permutations(number_len: usize) -> impl Iterator<Item = Vec<Operator>> {
-    let set = iter::repeat_n(Operator::ADD, number_len)
-        .chain(iter::repeat_n(Operator::MULTIPLY, number_len))
-        // .chain(iter::repeat_n(Operator::CONCATENATE, number_len))
-        ;
-
-    permutations::UniquePermutations::new(set.collect())
-}
-
-fn apply_operators(equation: &Equation, operators: &Vec<Operator>) -> bool {
+fn apply_operators(equation: Equation, mut last_result: NumberType, operator: Operator) -> bool {
     let Equation {
         numbers,
         test_value,
     } = equation;
 
     debug_assert!(!numbers.is_empty());
-    debug_assert_eq!(numbers.len(), operators.len() + 1);
 
-    let mut result = numbers[0];
+    let Some((next_number, numbers)) = numbers.split_first() else {
+        panic!();
+    };
 
-    for (next_number, operator) in numbers[1..].iter().zip(operators.iter()) {
-        match operator {
-            Operator::ADD => result += next_number,
-            Operator::MULTIPLY => result *= next_number,
-            Operator::CONCATENATE => {
-                result = format!("{result}{next_number}")
-                    .parse::<NumberType>()
-                    .unwrap()
-            }
-        }
-
-        if &result > test_value {
-            return false;
+    match operator {
+        Operator::ADD => last_result += next_number,
+        Operator::MULTIPLY => last_result *= next_number,
+        Operator::CONCATENATE => {
+            last_result = format!("{last_result}{next_number}")
+                .parse::<NumberType>()
+                .unwrap()
         }
     }
 
-    &result == test_value
+    if last_result > test_value {
+        return false;
+    }
+
+    if !numbers.is_empty() {
+        apply_operators(
+            Equation {
+                test_value,
+                numbers: numbers.to_vec(),
+            },
+            last_result,
+            Operator::ADD,
+        ) || apply_operators(
+            Equation {
+                test_value,
+                numbers: numbers.to_vec(),
+            },
+            last_result,
+            Operator::MULTIPLY,
+        ) || apply_operators(
+            Equation {
+                test_value,
+                numbers: numbers.to_vec(),
+            },
+            last_result,
+            Operator::CONCATENATE,
+        )
+    } else {
+        last_result == test_value
+    }
 }
 
-fn is_valid_equation(equation: &Equation) -> bool {
+fn is_valid_equation(equation: Equation) -> bool {
     let instant = Instant::now();
 
-    let needed_iterator_length = equation.numbers.len() - 1;
-
-    let permutations = get_all_permutations(needed_iterator_length);
-
-    for permutation in permutations {
-        let result = apply_operators(&equation, &permutation);
-
-        if result {
-            // yada yada yada
-            dbg!(instant.elapsed());
-            return true;
-        }
-    }
+    let result = apply_operators(equation.clone(), 0, Operator::ADD)
+        || apply_operators(equation.clone(), 0, Operator::MULTIPLY)
+        // || apply_operators(equation.clone(), 0, Operator::CONCATENATE)
+        ;
 
     dbg!(instant.elapsed());
 
-    false
+    result
 }
 
 fn get_sum_of_valid_equations(equation_list: Vec<Equation>) -> NumberType {
     let processed_equations = AtomicU16::new(0);
 
     equation_list
-        .par_iter()
+        .into_par_iter()
         .map(|equation| {
+            let test_value = equation.test_value;
+
             let result = is_valid_equation(equation);
             dbg!(processed_equations.fetch_add(1, Ordering::SeqCst));
 
             if result {
-                equation.test_value
+                test_value
             } else {
                 0
             }

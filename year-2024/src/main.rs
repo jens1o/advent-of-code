@@ -2,6 +2,7 @@ mod fifth;
 mod first;
 mod fourth;
 mod second;
+mod seventh;
 mod sixth;
 mod third;
 
@@ -12,4 +13,5 @@ fn main() {
     fourth::fourth_december();
     fifth::fifth_december();
     sixth::sixth_december();
+    seventh::seventh_december();
 }

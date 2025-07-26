@@ -229,12 +229,12 @@ fn part_2(map: Map, guard: Guard) -> Vec<(usize, usize)> {
                             .insert((new_position, guard_on_new_map.current_direction));
 
                         if in_loop {
-                            println!(
-                                "found new position for obstacle at ({x}, {y}, guard_pos={:?}):",
-                                guard.position
-                            );
-                            println!("{}", map_with_obstruction.text_representation(Some(&guard)));
-                            println!();
+                            // println!(
+                            //     "found new position for obstacle at ({x}, {y}, guard_pos={:?}):",
+                            //     guard.position
+                            // );
+                            // println!("{}", map_with_obstruction.text_representation(Some(&guard)));
+                            // println!();
 
                             possible_obstacle_positions_to_create_loops.push((x, y));
                             continue 'outer;

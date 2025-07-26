@@ -117,8 +117,7 @@ fn is_valid_equation(equation: Equation) -> bool {
 
     let result = apply_operators(equation.clone(), 0, Operator::ADD)
         || apply_operators(equation.clone(), 0, Operator::MULTIPLY)
-        // || apply_operators(equation.clone(), 0, Operator::CONCATENATE)
-        ;
+        || apply_operators(equation.clone(), 0, Operator::CONCATENATE);
 
     dbg!(instant.elapsed());
 

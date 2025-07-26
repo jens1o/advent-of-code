@@ -197,39 +197,6 @@ fn is_valid_position_for_obstacle((x, y): (usize, usize), map: &Map, guard: &Gua
         return false;
     }
 
-    return true;
-
-    // we can't place an obstacle diagonal to another one
-    // so that the guard would need to take two turns immediately
-    let mut diagonal_tiles_that_must_be_floor_tiles: Vec<(usize, usize)> = Vec::new();
-
-    // gather tiles on the map that need to be free
-    if x > 0 && y > 0 {
-        diagonal_tiles_that_must_be_floor_tiles.push((x - 1, y - 1));
-    }
-    if x < map.size.0 && y > 0 {
-        diagonal_tiles_that_must_be_floor_tiles.push((x + 1, y - 1));
-    }
-    if x > 0 && y < map.size.1 {
-        diagonal_tiles_that_must_be_floor_tiles.push((x - 1, y + 1));
-    }
-    if x < map.size.0 && y < map.size.1 {
-        diagonal_tiles_that_must_be_floor_tiles.push((x + 1, y + 1));
-    }
-
-    for (diagonal_tile_x, diagonal_tile_y) in diagonal_tiles_that_must_be_floor_tiles {
-        let diagonal_tile = map
-            .map
-            .get(diagonal_tile_y)
-            .and_then(|row: &Vec<MapTile>| row.get(diagonal_tile_x));
-
-        if let Some(diagonal_tile) = diagonal_tile {
-            if diagonal_tile == &MapTile::Obstruction {
-                return false;
-            }
-        }
-    }
-
     true
 }
 
